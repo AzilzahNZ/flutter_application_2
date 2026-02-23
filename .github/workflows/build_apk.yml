@@ -1,0 +1,49 @@
+name: Flutter Build APK
+
+# Menentukan kapan workflow ini berjalan
+on:
+  push:
+    branches:
+      - main # Ganti dengan branch utama Anda (misal: master)
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout kode dari repository
+      - uses: actions/checkout@v4
+
+      # 2. Setup Java (diperlukan untuk build Android)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      # 3. Setup Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x" # Bisa diisi versi spesifik atau 'any'
+          channel: "stable"
+          cache: true # Mengaktifkan cache agar build lebih cepat kedepannya
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 5. Build APK
+      # Tambahkan --split-per-abi jika ingin APK yang lebih kecil untuk tiap arsitektur
+      - name: Build APK
+        run: flutter build apk --release
+
+      # 6. Upload hasil build sebagai Artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
